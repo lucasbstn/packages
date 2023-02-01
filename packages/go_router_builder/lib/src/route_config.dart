@@ -39,6 +39,7 @@ class RouteConfig {
     this._path,
     this._routeDataClass,
     this._parent,
+    this._parentNavigatorKey,
   );
 
   /// Creates a new [RouteConfig] represented the annotation data in [reader].
@@ -87,13 +88,24 @@ class RouteConfig {
       );
     }
 
+    final ConstantReader parentNavigatorKeyValue =
+        reader.read('parentNavigatorKey');
+    final String? parentNavigatorKey = parentNavigatorKeyValue.isNull
+        ? null
+        : parentNavigatorKeyValue.stringValue;
+
     // TODO(kevmoo): validate that this MUST be a subtype of `GoRouteData`
     // TODO(stuartmorgan): Remove this ignore once 'analyze' can be set to
     // 5.2+ (when Flutter 3.4+ is on stable).
     // ignore: deprecated_member_use
     final InterfaceElement classElement = typeParamType.element;
 
-    final RouteConfig value = RouteConfig._(path, classElement, parent);
+    final RouteConfig value = RouteConfig._(
+      path,
+      classElement,
+      parent,
+      parentNavigatorKey,
+    );
 
     value._children.addAll(reader.read('routes').listValue.map((DartObject e) =>
         RouteConfig._fromAnnotation(ConstantReader(e), element, value)));
@@ -105,6 +117,7 @@ class RouteConfig {
   final String _path;
   final InterfaceElement _routeDataClass;
   final RouteConfig? _parent;
+  final String? _parentNavigatorKey;
 
   /// Generates all of the members that correspond to `this`.
   InfoIterable generateMembers() => InfoIterable._(
@@ -255,10 +268,15 @@ GoRoute get $_routeGetterName => ${_routeDefinition()};
 routes: [${_children.map((RouteConfig e) => '${e._routeDefinition()},').join()}],
 ''';
 
+    final String parentNavigatorKey = _parentNavigatorKey == null
+        ? ''
+        : 'parentNavigatorKey:$_parentNavigatorKey,';
+
     return '''
 GoRouteData.\$route(
       path: ${escapeDartString(_path)},
       factory: $_extensionName._fromState,
+      $parentNavigatorKey 
       $routesBit
 )
 ''';

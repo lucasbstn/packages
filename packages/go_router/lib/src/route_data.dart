@@ -75,6 +75,7 @@ abstract class GoRouteData {
     required String path,
     required T Function(GoRouterState) factory,
     List<GoRoute> routes = const <GoRoute>[],
+    GlobalKey<NavigatorState>? parentNavigatorKey,
   }) {
     T factoryImpl(GoRouterState state) {
       final Object? extra = state.extra;
@@ -103,6 +104,7 @@ abstract class GoRouteData {
       pageBuilder: pageBuilder,
       redirect: redirect,
       routes: routes,
+      parentNavigatorKey: parentNavigatorKey,
     );
   }
 
@@ -120,6 +122,7 @@ class TypedGoRoute<T extends GoRouteData> {
   const TypedGoRoute({
     required this.path,
     this.routes = const <TypedGoRoute<GoRouteData>>[],
+    this.parentNavigatorKey,
   });
 
   /// The path that corresponds to this rout.
@@ -131,6 +134,13 @@ class TypedGoRoute<T extends GoRouteData> {
   ///
   /// See [GoRoute.routes].
   final List<TypedGoRoute<GoRouteData>> routes;
+
+  /// An optional key name specifying which Navigator to display this route's screen
+  /// onto.
+  ///
+  /// Specifying the root Navigator will stack this route onto that
+  /// Navigator instead of the nearest ShellRoute ancestor.
+  final String? parentNavigatorKey;
 }
 
 /// Internal class used to signal that the default page behavior should be used.
